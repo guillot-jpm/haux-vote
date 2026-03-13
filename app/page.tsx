@@ -58,6 +58,8 @@ export default function Home() {
   const absolutePctA = validExpected > 0 ? (state.listAVotes / validExpected) * 100 : 0;
   const absolutePctB = validExpected > 0 ? (state.listBVotes / validExpected) * 100 : 0;
 
+  const thresholdToWin = validExpected > 0 ? Math.floor(validExpected / 2) + 1 : 0;
+
   let winnerName = null;
   if (absolutePctA > 50) winnerName = state.listAName;
   if (absolutePctB > 50) winnerName = state.listBName;
@@ -121,6 +123,8 @@ export default function Home() {
               validExpected={state.votants - state.blancsNuls}
               countedValid={state.listAVotes + state.listBVotes}
               color="blue"
+              thresholdToWin={thresholdToWin}
+              isAnyWinner={!!winnerName}
             />
             <ListResultCard
               name={state.listBName}
@@ -128,6 +132,8 @@ export default function Home() {
               validExpected={state.votants - state.blancsNuls}
               countedValid={state.listAVotes + state.listBVotes}
               color="red"
+              thresholdToWin={thresholdToWin}
+              isAnyWinner={!!winnerName}
             />
           </div>
         </section>
@@ -161,15 +167,21 @@ function ListResultCard({
   validExpected,
   countedValid,
   color,
+  thresholdToWin,
+  isAnyWinner,
 }: {
   name: string;
   votes: number;
   validExpected: number;
   countedValid: number;
   color: 'blue' | 'red';
+  thresholdToWin: number;
+  isAnyWinner: boolean;
 }) {
   const relativePercent = countedValid > 0 ? (votes / countedValid) * 100 : 0;
   const absolutePercent = validExpected > 0 ? (votes / validExpected) * 100 : 0;
+
+  const votesNeeded = thresholdToWin - votes;
 
   const colorClasses = {
     blue: 'border-l-blue-600 text-blue-600',
@@ -180,10 +192,16 @@ function ListResultCard({
     <div className={`bg-white p-6 rounded-xl shadow-sm border border-slate-200 border-l-8 ${colorClasses[color]}`}>
       <h3 className="text-xl font-bold text-slate-900 mb-4 truncate">{name}</h3>
 
-      <div className="flex justify-between items-baseline mb-6">
+      <div className="flex justify-between items-baseline mb-2">
         <span className="text-4xl font-black text-slate-900">{votes}</span>
         <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Suffrages</span>
       </div>
+
+      {!isAnyWinner && votesNeeded > 0 && validExpected > 0 && (
+        <p className="text-xs italic text-slate-500 mb-4">
+          Plus que {votesNeeded} voix pour atteindre la majorité absolue.
+        </p>
+      )}
 
       <div className="space-y-4 pt-4 border-t border-slate-50">
         <div>
