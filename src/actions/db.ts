@@ -5,8 +5,14 @@ import { ElectionState } from '@/types/election';
 import { revalidatePath } from 'next/cache';
 
 const redisClientSingleton = () => {
+  if (!process.env.REDIS_URL) {
+    console.warn('REDIS_URL is not defined. Redis client will not be able to connect.');
+  }
   const client = createClient({
-    url: process.env.REDIS_URL
+    url: process.env.REDIS_URL,
+    socket: {
+      connectTimeout: 5000,
+    }
   });
   client.on('error', (err) => console.error('Redis Client Error', err));
   return client;
