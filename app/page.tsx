@@ -54,9 +54,23 @@ export default function Home() {
   const participationRate = state.inscrits > 0 ? (state.votants / state.inscrits) * 100 : 0;
   const progressPercent = state.votants > 0 ? (totalCounted / state.votants) * 100 : 0;
 
+  const validExpected = state.votants - state.blancsNuls;
+  const absolutePctA = validExpected > 0 ? (state.listAVotes / validExpected) * 100 : 0;
+  const absolutePctB = validExpected > 0 ? (state.listBVotes / validExpected) * 100 : 0;
+
+  let winnerName = null;
+  if (absolutePctA > 50) winnerName = state.listAName;
+  if (absolutePctB > 50) winnerName = state.listBName;
+
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="max-w-4xl mx-auto space-y-8">
+        {winnerName && (
+          <div className="bg-slate-100 border border-slate-200 text-slate-800 p-4 rounded-xl text-center font-semibold shadow-sm">
+            La liste {winnerName} remporte l&apos;élection avec la majorité absolue des suffrages.
+          </div>
+        )}
+
         {/* Header Section */}
         <header className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6 text-center">

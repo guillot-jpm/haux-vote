@@ -45,7 +45,8 @@ export default function CountingInterface({ state, addVote, undoLastVote }: Coun
     });
   };
 
-  const progress = (totalCounted / votants) * 100;
+  const progress = votants > 0 ? (totalCounted / votants) * 100 : 0;
+  const isFinished = totalCounted >= votants;
 
   return (
     <div className="space-y-8">
@@ -65,12 +66,18 @@ export default function CountingInterface({ state, addVote, undoLastVote }: Coun
         </div>
       </div>
 
+      {isFinished && (
+        <div className="bg-green-100 border-l-4 border-green-500 p-4 rounded text-green-700 text-center font-bold">
+          Dépouillement terminé. Tous les bulletins ont été saisis.
+        </div>
+      )}
+
       {/* Main Counting Buttons */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <button
             onClick={() => handleAddVote('A')}
-            disabled={isPending || totalCounted >= votants}
+            disabled={isPending || isFinished}
             className="w-full h-32 text-2xl font-bold rounded-xl shadow-lg transition-transform active:scale-95 disabled:opacity-50 disabled:active:scale-100 bg-blue-100 text-blue-800 border-2 border-blue-200 hover:bg-blue-200"
           >
             {listAName}
@@ -83,7 +90,7 @@ export default function CountingInterface({ state, addVote, undoLastVote }: Coun
         <div className="space-y-2">
           <button
             onClick={() => handleAddVote('B')}
-            disabled={isPending || totalCounted >= votants}
+            disabled={isPending || isFinished}
             className="w-full h-32 text-2xl font-bold rounded-xl shadow-lg transition-transform active:scale-95 disabled:opacity-50 disabled:active:scale-100 bg-red-100 text-red-800 border-2 border-red-200 hover:bg-red-200"
           >
             {listBName}
@@ -98,7 +105,7 @@ export default function CountingInterface({ state, addVote, undoLastVote }: Coun
         <div className="w-full max-w-md space-y-2">
           <button
             onClick={() => handleAddVote('NUL')}
-            disabled={isPending || totalCounted >= votants}
+            disabled={isPending || isFinished}
             className="w-full h-20 text-xl font-bold rounded-xl shadow transition-transform active:scale-95 disabled:opacity-50 disabled:active:scale-100 bg-gray-100 text-gray-800 border-2 border-gray-200 hover:bg-gray-200"
           >
             Blanc ou nul
@@ -117,11 +124,6 @@ export default function CountingInterface({ state, addVote, undoLastVote }: Coun
         </button>
       </div>
 
-      {totalCounted >= votants && (
-        <div className="bg-green-100 border-l-4 border-green-500 p-4 rounded text-green-700 text-center font-bold">
-          Toutes les enveloppes ont été traitées !
-        </div>
-      )}
     </div>
   );
 }
