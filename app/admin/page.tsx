@@ -1,5 +1,6 @@
 import { logout } from '@/actions/auth';
-import { getElectionState, initElectionAction, openCountingAction, resetElection } from '@/actions/db';
+import { getElectionState, initElectionAction, openCountingAction, resetElection, addVote, undoLastVote } from '@/actions/db';
+import CountingInterface from '@/components/CountingInterface';
 
 export const dynamic = 'force-dynamic';
 
@@ -112,13 +113,14 @@ export default async function AdminPage() {
 
           {/* Condition C: Dépouillement en cours ou terminé */}
           {(state.status === 'COUNTING' || state.status === 'FINISHED') && (
-            <div className="space-y-6">
-              <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
-                <p className="text-blue-700">
-                  Le dépouillement est en cours. L&apos;interface de comptage sera bientôt disponible.
-                </p>
-              </div>
-              <div className="space-y-2">
+            <div className="space-y-8">
+              <CountingInterface
+                state={state}
+                addVote={addVote}
+                undoLastVote={undoLastVote}
+              />
+
+              <div className="space-y-2 border-t pt-6">
                 <h2 className="text-xl font-semibold text-gray-800">Résumé de la configuration</h2>
                 <div className="bg-gray-100 p-4 rounded-md grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div><span className="font-bold">Liste A:</span> {state.listAName}</div>
