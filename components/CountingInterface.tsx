@@ -25,6 +25,9 @@ export default function CountingInterface({ state, addVote, undoLastVote }: Coun
   const absolutePctA = calculatePercentage(listAVotes);
   const absolutePctB = calculatePercentage(listBVotes);
 
+  const thresholdToWin = validExpected > 0 ? Math.floor(validExpected / 2) + 1 : 0;
+  const isAnyWinner = (validExpected > 0) && (listAVotes >= thresholdToWin || listBVotes >= thresholdToWin);
+
   const handleAddVote = (type: 'A' | 'B' | 'NUL') => {
     startTransition(async () => {
       try {
@@ -82,9 +85,16 @@ export default function CountingInterface({ state, addVote, undoLastVote }: Coun
           >
             {listAName}
           </button>
-          <p className="text-center font-semibold text-gray-700">
-            {listAVotes} voix ({absolutePctA}%)
-          </p>
+          <div className="text-center space-y-1">
+            <p className="font-semibold text-gray-700">
+              {listAVotes} voix ({absolutePctA}%)
+            </p>
+            {!isAnyWinner && thresholdToWin - listAVotes > 0 && validExpected > 0 && (
+              <p className="text-sm italic text-gray-500">
+                Plus que {thresholdToWin - listAVotes} voix pour atteindre la majorité absolue.
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -95,9 +105,16 @@ export default function CountingInterface({ state, addVote, undoLastVote }: Coun
           >
             {listBName}
           </button>
-          <p className="text-center font-semibold text-gray-700">
-            {listBVotes} voix ({absolutePctB}%)
-          </p>
+          <div className="text-center space-y-1">
+            <p className="font-semibold text-gray-700">
+              {listBVotes} voix ({absolutePctB}%)
+            </p>
+            {!isAnyWinner && thresholdToWin - listBVotes > 0 && validExpected > 0 && (
+              <p className="text-sm italic text-gray-500">
+                Plus que {thresholdToWin - listBVotes} voix pour atteindre la majorité absolue.
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
