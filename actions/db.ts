@@ -123,3 +123,55 @@ export async function openCountingAction(formData: FormData) {
 
   await openCounting(votants);
 }
+
+export async function addVote(type: 'A' | 'B' | 'NUL') {
+  const currentState = await getElectionState();
+
+  const totalCounted =
+    currentState.listAVotes + currentState.listBVotes + currentState.blancsNuls;
+
+  if (totalCounted >= currentState.votants) {
+    throw new Error('Toutes les enveloppes ont déjà été dépouillées.');
+  }
+
+  const newState: ElectionState = {
+    ...currentState,
+    history: [...currentState.history, type],
+  };
+
+  if (type === 'A') newState.listAVotes++;
+  else if (type === 'B') newState.listBVotes++;
+  else if (type === 'NUL') newState.blancsNuls++;
+
+  const client = await getClient();
+  await client.set('election_data', JSON.stringify(newState));
+  revalidatePath('/');
+  revalidatePath('/admin');
+  return newState;
+}
+
+export async function undoLastVote() {
+  const currentState = await getElectionState();
+
+  if (currentState.history.length === 0) {
+    throw new Error('Aucun vote à annuler.');
+  }
+
+  const newHistory = [...currentState.history];
+  const lastVote = newHistory.pop();
+
+  const newState: ElectionState = {
+    ...currentState,
+    history: newHistory,
+  };
+
+  if (lastVote === 'A') newState.listAVotes--;
+  else if (lastVote === 'B') newState.listBVotes--;
+  else if (lastVote === 'NUL') newState.blancsNuls--;
+
+  const client = await getClient();
+  await client.set('election_data', JSON.stringify(newState));
+  revalidatePath('/');
+  revalidatePath('/admin');
+  return newState;
+}
