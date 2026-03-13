@@ -66,6 +66,29 @@ export async function initElection(listAName: string, listBName: string, inscrit
   const client = await getClient();
   await client.set('election_data', JSON.stringify(newState));
   revalidatePath('/');
+  revalidatePath('/admin');
+  return newState;
+}
+
+export async function openCounting(votants: number) {
+  const currentState = await getElectionState();
+  if (currentState.status !== 'CONFIG') {
+    throw new Error("L'élection n'est pas en phase de configuration.");
+  }
+
+  if (votants > currentState.inscrits) {
+    throw new Error("Le nombre de votants ne peut pas être supérieur au nombre d'inscrits.");
+  }
+
+  const newState: ElectionState = {
+    ...currentState,
+    votants,
+    status: 'COUNTING',
+  };
+  const client = await getClient();
+  await client.set('election_data', JSON.stringify(newState));
+  revalidatePath('/');
+  revalidatePath('/admin');
   return newState;
 }
 
@@ -73,4 +96,30 @@ export async function resetElection() {
   const client = await getClient();
   await client.del('election_data');
   revalidatePath('/');
+  revalidatePath('/admin');
+}
+
+// Wrapper actions for FormData
+export async function initElectionAction(formData: FormData) {
+  const listAName = formData.get('listAName') as string;
+  const listBName = formData.get('listBName') as string;
+  const inscritsValue = formData.get('inscrits');
+  const inscrits = parseInt(inscritsValue as string, 10);
+
+  if (!listAName || !listBName || isNaN(inscrits)) {
+    throw new Error('Données invalides');
+  }
+
+  await initElection(listAName, listBName, inscrits);
+}
+
+export async function openCountingAction(formData: FormData) {
+  const votantsValue = formData.get('votants');
+  const votants = parseInt(votantsValue as string, 10);
+
+  if (isNaN(votants)) {
+    throw new Error('Nombre de votants invalide');
+  }
+
+  await openCounting(votants);
 }
